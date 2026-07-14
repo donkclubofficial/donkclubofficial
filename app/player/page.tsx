@@ -4,15 +4,33 @@ import { useEffect, useState } from "react";
 import { initLiff } from "../../lib/liff";
 
 export default function PlayerPage() {
+
+  alert("PLAYER PAGE RUN");
+
   const [player, setPlayer] = useState<any>(null);
-  const [buyins, setBuyins] = useState<any[]>([]);
-  const [cashOut, setCashOut] = useState(0);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
+
+    alert("STEP 1");
+
     async function run() {
+
+      alert("STEP 2");
+
       const profile = await initLiff();
 
-      if (!profile) return;
+      alert("PROFILE = " + JSON.stringify(profile));
+
+      if (!profile) {
+
+        alert("NO PROFILE");
+
+        return;
+
+      }
+
+      alert("STEP 3");
 
       const res = await fetch("/api/player/me", {
         method: "POST",
@@ -24,9 +42,11 @@ export default function PlayerPage() {
         }),
       });
 
+      alert("STEP 4");
+
       const data = await res.json();
 
-      console.log(data);
+      alert(JSON.stringify(data));
 
       if (data.error) {
         alert(data.error);
@@ -34,69 +54,27 @@ export default function PlayerPage() {
       }
 
       setPlayer(data.player);
-      setBuyins(data.buyins);
-      setCashOut(data.cashOut);
+      setTransactions(data.transactions || []);
+
     }
 
     run();
+
   }, []);
 
   if (!player) {
-    return (
-      <div
-        style={{
-          background: "#111",
-          color: "#fff",
-          minHeight: "100vh",
-          padding: 30,
-        }}
-      >
-        Loading...
-      </div>
-    );
+    return <div style={{ padding: 30 }}>Loading...</div>;
   }
 
   return (
-    <div
-      style={{
-        background: "#111",
-        color: "#fff",
-        minHeight: "100vh",
-        padding: 30,
-      }}
-    >
-      <h1>{player.displayName || player.name}</h1>
+    <div style={{ padding: 30 }}>
+      <h1>{player.display_name}</h1>
 
-      <hr />
-
-      <h2>Cash Out</h2>
-
-      <h3>{cashOut}</h3>
-
-      <hr />
-
-      <h2>ประวัติ Buy In</h2>
-
-      {buyins.length === 0 ? (
-        <p>ไม่มีข้อมูล</p>
-      ) : (
-        buyins.map((b: any) => (
-          <div
-            key={b.day}
-            style={{
-              border: "1px solid #555",
-              marginTop: 10,
-              padding: 15,
-            }}
-          >
-            <b>วันที่ {b.day}</b>
-
-            <br />
-
-            Buy In : {b.buyIn}
-          </div>
-        ))
-      )}
+      {transactions.map((t: any) => (
+        <div key={t.id}>
+          <p>{t.buy_in}</p>
+        </div>
+      ))}
     </div>
   );
 }
