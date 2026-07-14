@@ -4,33 +4,25 @@ import { useEffect, useState } from "react";
 import { initLiff } from "../../lib/liff";
 
 export default function PlayerPage() {
-
-  alert("PLAYER PAGE RUN");
-
   const [player, setPlayer] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
-
-    alert("STEP 1");
+    alert("PLAYER PAGE RUN");
 
     async function run() {
-
-      alert("STEP 2");
+      alert("STEP 1");
 
       const profile = await initLiff();
 
       alert("PROFILE = " + JSON.stringify(profile));
 
       if (!profile) {
-
         alert("NO PROFILE");
-
         return;
-
       }
 
-      alert("STEP 3");
+      alert("STEP 2");
 
       const res = await fetch("/api/player/me", {
         method: "POST",
@@ -42,7 +34,7 @@ export default function PlayerPage() {
         }),
       });
 
-      alert("STEP 4");
+      alert("STEP 3");
 
       const data = await res.json();
 
@@ -55,11 +47,9 @@ export default function PlayerPage() {
 
       setPlayer(data.player);
       setTransactions(data.transactions || []);
-
     }
 
     run();
-
   }, []);
 
   if (!player) {
@@ -68,7 +58,7 @@ export default function PlayerPage() {
 
   return (
     <div style={{ padding: 30 }}>
-      <h1>{player.display_name}</h1>
+      <h1>{player.display_name || player.name}</h1>
 
       {transactions.map((t: any) => (
         <div key={t.id}>
