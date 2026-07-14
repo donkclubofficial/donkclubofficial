@@ -2,17 +2,35 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
-  const { userId } = await req.json();
+  try {
+    const { userId } = await req.json();
 
-  const { data: players, error } = await supabase
-    .from("players")
-    .select("*");
+    if (!userId) {
+      return NextResponse.json({ error: "Missing userId" });
+    }
 
-  return NextResponse.json({
-    envUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    userId,
-    count: players?.length ?? 0,
-    players,
-    error,
-  });
+    const { data: player, error: playerError } = await supabase
+      .from("players")
+      .select("*")
+      .eq("line_user_id", userId)
+      .single();
+
+    if (playerError || !player) {
+      return NextResponse.json({ error: "Player not found" });
+    }
+
+    const { data: transactions } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("player_id", player.id)
+      .order("created_at", { ascending: false });
+
+    return NextResponse.json({
+      player,
+      transactions: transactions ?? [],
+    });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Server Error" });
+  }
 }

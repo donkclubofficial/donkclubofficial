@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { initLiff } from "../../lib/liff";
 
 export default function PlayerPage() {
+  const [player, setPlayer] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
   useEffect(() => {
     async function run() {
       const profile = await initLiff();
-
-      console.log("PROFILE =", profile);
 
       if (!profile) return;
 
@@ -22,17 +23,36 @@ export default function PlayerPage() {
         }),
       });
 
-      console.log("STATUS =", res.status);
+      const data = await res.json();
 
-      const text = await res.text();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
 
-      console.log("RAW RESPONSE =", text);
-
-      alert(text);
+      setPlayer(data.player);
+      setTransactions(data.transactions || []);
     }
 
     run();
   }, []);
 
-  return <h1>Loading...</h1>;
+  if (!player) {
+    return <h1>Loading...</h1>;
+  }
+
+  return (
+    <div style={{ padding: 30 }}>
+      <h1>{player.display_name}</h1>
+      <p>Buy In: {player.buy_in}</p>
+
+      <hr />
+
+      {transactions.map((t: any) => (
+        <div key={t.id}>
+          <p>{t.buy_in}</p>
+        </div>
+      ))}
+    </div>
+  );
 }
