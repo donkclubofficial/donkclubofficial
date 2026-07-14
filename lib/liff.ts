@@ -1,34 +1,18 @@
 import liff from "@line/liff";
 
 export async function initLiff() {
-  try {
-    alert("LIFF START");
+  await liff.init({
+    liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
+  });
 
-    await liff.init({
-      liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
-    });
+  console.log("CURRENT URL =", window.location.href);
 
-    alert("INIT OK");
+  console.log("LIFF URL =", liff.permanentLink.createUrl());
 
-    alert("LOGIN = " + liff.isLoggedIn());
-
-    if (!liff.isLoggedIn()) {
-      alert("GO LOGIN");
-      liff.login();
-      return null;
-    }
-
-    const profile = await liff.getProfile();
-
-    alert("DISPLAY = " + profile.displayName);
-    alert("USERID = " + profile.userId);
-
-    console.log(profile);
-
-    return profile;
-  } catch (e) {
-    console.error(e);
-    alert("ERROR : " + String(e));
+  if (!liff.isLoggedIn()) {
+    liff.login();
     return null;
   }
+
+  return await liff.getProfile();
 }

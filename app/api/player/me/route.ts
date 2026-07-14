@@ -2,54 +2,17 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
-  try {
-    const { userId } = await req.json();
+  const { userId } = await req.json();
 
-    console.log("========== /api/player/me ==========");
-    console.log("LINE USER ID =", userId);
+  const { data: players, error } = await supabase
+    .from("players")
+    .select("*");
 
-    if (!userId) {
-      return NextResponse.json({
-        error: "Missing userId",
-      });
-    }
-
-    // หา Player จาก LINE User ID
-    const { data: player, error: playerError } = await supabase
-      .from("players")
-      .select("*")
-      .eq("line_user_id", userId)
-      .single();
-
-    console.log("PLAYER =", player);
-    console.log("PLAYER ERROR =", playerError);
-
-    if (playerError || !player) {
-      return NextResponse.json({
-        error: "Player not found",
-      });
-    }
-
-    // ดึงประวัติ Buy In / Cash Out
-    const { data: transactions, error: txError } = await supabase
-      .from("transactions")
-      .select("*")
-      .eq("player_id", player.id)
-      .order("created_at", { ascending: false });
-
-    console.log("TRANSACTIONS =", transactions);
-    console.log("TRANSACTION ERROR =", txError);
-
-    return NextResponse.json({
-      success: true,
-      player,
-      transactions: transactions ?? [],
-    });
-  } catch (err) {
-    console.error(err);
-
-    return NextResponse.json({
-      error: "Server Error",
-    });
-  }
+  return NextResponse.json({
+    envUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    userId,
+    count: players?.length ?? 0,
+    players,
+    error,
+  });
 }
